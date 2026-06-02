@@ -1,0 +1,47 @@
+-- Positive v0.1 Beta
+-- Database Audit
+-- Date: 2026-06-02
+
+-- =========================
+-- TABLES
+-- =========================
+-- businesses
+-- business_photos
+-- business_hours
+-- business_claims
+-- positives
+-- reports
+-- profiles
+-- cos_items
+
+-- =========================
+-- CHANGES APPLIED
+-- =========================
+-- Created profiles table
+-- Created cos_items table
+-- Enabled RLS on all tables
+-- Added policies for profiles and cos_items
+-- Added foreign keys:
+--   businesses.owner_id -> profiles.id
+--   businesses.created_by -> profiles.id
+--   positives.user_id -> profiles.id
+--   positives.business_id -> businesses.id
+--   reports.user_id -> profiles.id
+--   reports.reviewed_by -> profiles.id
+--   business_claims.user_id -> profiles.id
+--   business_claims.reviewed_by -> profiles.id
+-- Cleaned orphan records
+-- Added indexes
+-- Removed legacy unique index:
+--   one_positive_per_user_per_business
+
+-- =========================
+-- STATUS
+-- =========================
+-- Schema: OK
+-- RLS: OK
+-- Policies: OK
+-- Foreign Keys: OK
+-- Indexes: OK
+
+-- Database validated and aligned with Positive v0.1 Beta
