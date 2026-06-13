@@ -15,26 +15,27 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://positive.town"),
 
-  title: "Positive | Attività, luoghi e professionisti consigliati nel Canavese",
+  title: "Positive | Attività, luoghi e professionisti consigliati",
 
   description:
-    "Scopri attività, negozi, ristoranti e professionisti consigliati dalla comunità nel Canavese. Positive valorizza ciò che merita di essere scoperto.",
+    "Scopri e valorizza attività, luoghi, negozi, ristoranti e professionisti consigliati dalla comunità. Positive raccoglie ciò che merita di essere scoperto.",
 
   keywords: [
-    "Canavese",
-    "Ivrea",
-    "Rivarolo Canavese",
-    "attività locali",
+    "Positive",
+    "attività consigliate",
+    "luoghi consigliati",
+    "professionisti consigliati",
     "ristoranti",
     "negozi",
-    "professionisti",
-    "Positive",
+    "attività locali",
+    "recensioni positive",
+    "segnalazioni positive",
   ],
 
   openGraph: {
-    title: "Positive",
+    title: "Positive | Scopri ciò che merita",
     description:
-      "Scopri attività, luoghi e professionisti consigliati nel Canavese.",
+      "Attività, luoghi e professionisti consigliati dalla comunità.",
     url: "https://positive.town",
     siteName: "Positive",
     locale: "it_IT",
@@ -51,9 +52,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Positive",
+    title: "Positive | Scopri ciò che merita",
     description:
-      "Scopri attività, luoghi e professionisti consigliati nel Canavese.",
+      "Attività, luoghi e professionisti consigliati dalla comunità.",
     images: ["/positive-logo.png"],
   },
 };
