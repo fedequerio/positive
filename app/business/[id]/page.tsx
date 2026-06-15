@@ -9,7 +9,18 @@ type Props = {
 async function getBusiness(id: string) {
   const { data } = await supabase
     .from("businesses")
-    .select("id, name, category, city, address, description")
+    .select(`
+      id,
+      name,
+      category,
+      city,
+      address,
+      description,
+      business_photos (
+        photo_url,
+        is_cover
+        )
+      `)
     .eq("id", Number(id))
     .single();
 
@@ -29,6 +40,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const name = business.name || "Attività";
   const city = business.city ? ` a ${business.city}` : "";
+  const photos = business.business_photos || [];
+  const coverPhoto =
+  photos.find((photo: any) => photo.is_cover)?.photo_url ||
+  photos[0]?.photo_url ||
+  "/positive-logo.png";
 
   return {
     title: `${name} | Positive`,
@@ -45,6 +61,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: "Positive",
       type: "website",
       locale: "it_IT",
+        images: [
+    {
+    url: coverPhoto,
+      width: 1200,
+      height: 630,
+      alt: name,
+    },
+      ],
     },
 
     twitter: {
@@ -53,6 +77,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description:
         business.description ||
         `Scopri informazioni, orari, contatti e Positive di ${name}${city}.`,
+      images: [coverPhoto],
     },
   };
 }
