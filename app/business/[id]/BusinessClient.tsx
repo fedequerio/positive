@@ -270,9 +270,32 @@ async function copyLink() {
 
   const websiteUrl = normalizeUrl(business.website);
   const instagramUrl = normalizeInstagram(business.instagram);
-
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: business.name,
+    description: business.description,
+    address: {
+      "@type": "PostalAddress",
+    streetAddress: business.address,
+    addressLocality: business.city,
+    addressCountry: "IT",
+    },
+ telephone: business.phone,
+  url: `https://positive.town/business/${business.id}`,
+  sameAs: [
+    business.website ? websiteUrl : null,
+    business.instagram ? instagramUrl : null,
+  ].filter(Boolean),
+};
   return (
     <main className="min-h-screen bg-white px-5 py-6 sm:p-8">
+      <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify(structuredData),
+  }}
+/>
       <div className="max-w-3xl mx-auto">
         <Link href="/" className="text-neutral-600 hover:underline text-sm">
           ← Torna alla lista
