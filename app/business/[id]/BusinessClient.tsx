@@ -271,17 +271,18 @@ async function copyLink() {
   const websiteUrl = normalizeUrl(business.website);
   const instagramUrl = normalizeInstagram(business.instagram);
   const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: business.name,
-    description: business.description,
-    address: {
-      "@type": "PostalAddress",
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: business.name,
+  description: business.description,
+  image: coverPhoto?.photo_url,
+  address: {
+    "@type": "PostalAddress",
     streetAddress: business.address,
     addressLocality: business.city,
     addressCountry: "IT",
-    },
- telephone: business.phone,
+  },
+  telephone: business.phone,
   url: `https://positive.town/business/${business.id}`,
   sameAs: [
     business.website ? websiteUrl : null,
