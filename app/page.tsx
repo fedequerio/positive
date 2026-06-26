@@ -313,6 +313,25 @@ export default function Home() {
     const category = normalizeText(newCategory);
     const city = normalizeText(newCity);
     const address = normalizeText(newAddress);
+    const { data: existingBusinesses } = await supabase
+  .from("businesses")
+  .select("id, name, category, city, address")
+  .ilike("city", newCity.trim())
+  .ilike("address", newAddress.trim());
+
+const existingDuplicate = (existingBusinesses || []).find((business) => {
+  const sameName = normalizeText(business.name) === name;
+  const sameCategory = normalizeText(business.category) === category;
+
+  return sameName || sameCategory;
+});
+
+if (existingDuplicate) {
+  setMessage(
+    `Questa attività sembra già presente o già inviata: ${existingDuplicate.name}`
+  );
+  return;
+}
 
     const duplicate = businesses.find((business) => {
       const sameAddress =
