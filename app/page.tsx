@@ -373,10 +373,15 @@ if (existingDuplicate) {
     ]);
 
     if (error) {
-      setMessage("Errore creazione attività.");
-      setIsCreating(false);
-      return;
-    }
+  if (error.code === "23505") {
+    setMessage("Questa attività è già presente oppure è già stata inviata.");
+  } else {
+    setMessage(error.message);
+  }
+
+  setIsCreating(false);
+  return;
+}
 
     setNewName("");
     setNewCategory("");
