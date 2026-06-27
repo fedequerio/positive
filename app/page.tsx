@@ -102,7 +102,7 @@ export default function Home() {
       options: { emailRedirectTo: window.location.origin },
     });
 
-    setMessage(error ? error.message : "Controlla la tua email.");
+    setMessage(error ? error.message : "Ti abbiamo inviato un link di accesso. Controlla la tua email (e, se necessario, anche la cartella Spam).");
     setIsSendingEmail(false);
   }
 
@@ -300,7 +300,7 @@ export default function Home() {
     if (isCreating) return;
 
     if (!user) {
-      setMessage("Devi accedere.");
+      setMessage("Per inserire un'attività è necessario effettuare il login con la propria email. È gratuito e richiede solo pochi secondi.");
       return;
     }
 
@@ -328,7 +328,7 @@ const existingDuplicate = (existingBusinesses || []).find((business) => {
 
 if (existingDuplicate) {
   setMessage(
-    `Questa attività sembra già presente o già inviata: ${existingDuplicate.name}`
+    `Questa attività è già presente su Positive oppure è già stata inviata per l'approvazione. Se non la trovi ancora, potrebbe essere in attesa di verifica.: ${existingDuplicate.name}`
   );
   return;
 }
