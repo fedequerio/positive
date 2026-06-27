@@ -729,7 +729,7 @@ if (existingDuplicate) {
               className="border border-gray-300 rounded-3xl p-5"
             >
               <h2 className="text-xl font-semibold text-black mb-4">
-                Aggiungi attività
+                Non trovi l'attività che cerchi? Aggiungila tu!
               </h2>
 
               <div className="grid gap-3">
@@ -817,7 +817,7 @@ if (existingDuplicate) {
                   disabled={isCreating}
                   className="bg-black text-white px-4 py-3 rounded-xl text-sm active:scale-95 transition disabled:opacity-50"
                 >
-                  {isCreating ? "Creazione..." : "Crea pagina"}
+                  {isCreating ? "Creazione..." : "Aggiungi attività"}
                 </button>
               </div>
             </div>
