@@ -374,7 +374,7 @@ if (existingDuplicate) {
 
     if (error) {
   if (error.code === "23505") {
-    setMessage("Questa attività è già presente oppure è già stata inviata.");
+    setMessage("Questa attività è già presente su Positive oppure è già stata inviata per l'approvazione. Se non la trovi ancora, potrebbe essere in attesa di verifica.");
   } else {
     setMessage(error.message);
   }
@@ -717,9 +717,11 @@ if (existingDuplicate) {
                 </div>
               )}
 
-              {message && (
-                <p className="text-sm text-gray-600 mt-3">{message}</p>
-              )}
+             {message && (
+  <div className="mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-red-700 text-sm font-medium">
+    {message}
+  </div>
+)}
             </div>
 
             <div
