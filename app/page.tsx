@@ -561,7 +561,7 @@ if (existingDuplicate) {
         </div>
 
         <p className="text-gray-600 mb-8 text-lg md:text-xl">
-          Discover what deserves it.
+          Solo esperienze positive.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
