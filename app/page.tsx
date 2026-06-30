@@ -102,7 +102,12 @@ export default function Home() {
       options: { emailRedirectTo: window.location.origin },
     });
 
-    setMessage(error ? error.message : "Ti abbiamo inviato un link di accesso. Controlla la tua email (e, se necessario, anche la cartella Spam).");
+    setMessage(
+      error
+        ? error.message
+        : "Ti abbiamo inviato un link di accesso. Clicca sul link ricevuto via email per completare il login. Se non lo trovi, controlla anche la cartella Spam."
+    );
+
     setIsSendingEmail(false);
   }
 
@@ -146,9 +151,7 @@ export default function Home() {
 
       const tagNames = Array.from(
         new Set(
-          (tagData || [])
-            .map((item) => item.business_name)
-            .filter(Boolean)
+          (tagData || []).map((item) => item.business_name).filter(Boolean)
         )
       );
 
@@ -300,7 +303,9 @@ export default function Home() {
     if (isCreating) return;
 
     if (!user) {
-      setMessage("Per inserire un'attività è necessario effettuare il login con la propria email. È gratuito e richiede solo pochi secondi.");
+      setMessage(
+        "Per inserire un'attività è necessario effettuare il login con la propria email. È gratuito e richiede solo pochi secondi."
+      );
       return;
     }
 
@@ -313,25 +318,26 @@ export default function Home() {
     const category = normalizeText(newCategory);
     const city = normalizeText(newCity);
     const address = normalizeText(newAddress);
+
     const { data: existingBusinesses } = await supabase
-  .from("businesses")
-  .select("id, name, category, city, address")
-  .ilike("city", newCity.trim())
-  .ilike("address", newAddress.trim());
+      .from("businesses")
+      .select("id, name, category, city, address")
+      .ilike("city", newCity.trim())
+      .ilike("address", newAddress.trim());
 
-const existingDuplicate = (existingBusinesses || []).find((business) => {
-  const sameName = normalizeText(business.name) === name;
-  const sameCategory = normalizeText(business.category) === category;
+    const existingDuplicate = (existingBusinesses || []).find((business) => {
+      const sameName = normalizeText(business.name) === name;
+      const sameCategory = normalizeText(business.category) === category;
 
-  return sameName || sameCategory;
-});
+      return sameName || sameCategory;
+    });
 
-if (existingDuplicate) {
-  setMessage(
-    `Questa attività è già presente su Positive oppure è già stata inviata per l'approvazione. Se non la trovi ancora, potrebbe essere in attesa di verifica.: ${existingDuplicate.name}`
-  );
-  return;
-}
+    if (existingDuplicate) {
+      setMessage(
+        `Questa attività è già presente su Positive oppure è già stata inviata per l'approvazione. Se non la trovi ancora, potrebbe essere in attesa di verifica: ${existingDuplicate.name}`
+      );
+      return;
+    }
 
     const duplicate = businesses.find((business) => {
       const sameAddress =
@@ -373,15 +379,17 @@ if (existingDuplicate) {
     ]);
 
     if (error) {
-  if (error.code === "23505") {
-    setMessage("Questa attività è già presente su Positive oppure è già stata inviata per l'approvazione. Se non la trovi ancora, potrebbe essere in attesa di verifica.");
-  } else {
-    setMessage(error.message);
-  }
+      if (error.code === "23505") {
+        setMessage(
+          "Questa attività è già presente su Positive oppure è già stata inviata per l'approvazione. Se non la trovi ancora, potrebbe essere in attesa di verifica."
+        );
+      } else {
+        setMessage(error.message);
+      }
 
-  setIsCreating(false);
-  return;
-}
+      setIsCreating(false);
+      return;
+    }
 
     setNewName("");
     setNewCategory("");
@@ -481,20 +489,20 @@ if (existingDuplicate) {
   }, [search]);
 
   useEffect(() => {
-  supabase.auth.getSession().then(({ data }) => {
-    setUser(data.session?.user ?? null);
-  });
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null);
+    });
 
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    setUser(session?.user ?? null);
-  });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const filteredBusinesses = (() => {
     const words = normalizeText(search).split(/\s+/).filter(Boolean);
@@ -543,6 +551,21 @@ if (existingDuplicate) {
             className="h-16 md:h-27 w-auto"
           />
 
+          <div className="hidden lg:block rounded-2xl border border-gray-200 bg-white px-5 py-3 shadow-sm max-w-xs">
+            <p className="font-bold text-gray-900">🏢 Hai un&apos;attività?</p>
+
+            <p className="mt-1 text-sm text-gray-600">
+              Gestiscila gratuitamente con Positive for Business.
+            </p>
+
+            <Link
+              href="/for-business"
+              className="mt-3 inline-flex rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              Scopri Positive for Business
+            </Link>
+          </div>
+
           <div className="flex gap-2 lg:hidden">
             <a
               href="#login-section"
@@ -560,13 +583,28 @@ if (existingDuplicate) {
           </div>
         </div>
 
-        <p className="text-gray-600 mb-8 text-lg md:text-xl">
+        <p className="text-gray-600 mb-5 text-lg md:text-xl">
           Solo esperienze positive.
         </p>
 
+        <div className="lg:hidden mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <p className="font-bold text-gray-900">🏢 Hai un&apos;attività?</p>
+
+          <p className="mt-1 text-sm text-gray-600">
+            Gestiscila gratuitamente con Positive for Business.
+          </p>
+
+          <Link
+            href="/for-business"
+            className="mt-3 inline-flex w-full justify-center rounded-xl bg-black px-4 py-3 text-sm font-semibold text-white transition"
+          >
+            Scopri Positive for Business
+          </Link>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
           <section>
-           <BusinessMap businesses={filteredBusinesses} />
+            <BusinessMap businesses={filteredBusinesses} />
 
             <div className="flex flex-col md:flex-row gap-3 mb-8">
               <input
@@ -717,11 +755,11 @@ if (existingDuplicate) {
                 </div>
               )}
 
-             {message && (
-  <div className="mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-red-700 text-sm font-medium">
-    {message}
-  </div>
-)}
+              {message && (
+                <div className="mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-red-700 text-sm font-medium">
+                  {message}
+                </div>
+              )}
             </div>
 
             <div
@@ -729,7 +767,7 @@ if (existingDuplicate) {
               className="border border-gray-300 rounded-3xl p-5"
             >
               <h2 className="text-xl font-semibold text-black mb-4">
-                Non trovi l'attività che cerchi? Aggiungila tu!
+                Non trovi l&apos;attività che cerchi? Aggiungila tu!
               </h2>
 
               <div className="grid gap-3">
@@ -825,35 +863,24 @@ if (existingDuplicate) {
         </div>
 
         <footer className="mt-20 border-t border-gray-200 pt-8 pb-10">
-  <div className="flex flex-col md:flex-row gap-4 md:gap-8 text-sm text-gray-600">
-    <Link href="/contact">Contatti</Link>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 text-sm text-gray-600">
+            <Link href="/contact">Contatti</Link>
 
-    <Link href="/privacy">
-      Privacy & Cookies Policy
-    </Link>
+            <Link href="/privacy">Privacy & Cookies Policy</Link>
 
-    <Link href="/legal">
-      Note legali
-    </Link>
+            <Link href="/legal">Note legali</Link>
 
-    {user && (
-      <Link href="/profile">
-        Profilo
-      </Link>
-    )}
+            <Link href="/for-business">Positive for Business</Link>
 
-    {user && (
-      <Link href="/my-businesses">
-        Le mie attività
-      </Link>
-    )}
-    {user?.email === "federico.querio@hotmail.it" && (
-  <Link href="/admin">
-    Admin
-  </Link>
-)}
-  </div>
-</footer>
+            {user && <Link href="/profile">Profilo</Link>}
+
+            {user && <Link href="/my-businesses">Le mie attività</Link>}
+
+            {user?.email === "federico.querio@hotmail.it" && (
+              <Link href="/admin">Admin</Link>
+            )}
+          </div>
+        </footer>
       </div>
     </main>
   );
