@@ -41,7 +41,7 @@ export default function BusinessQrPdfButton({ businessId, businessName }: Props)
     pdf.text("Hai vissuto", centerX, 62, { align: "center" });
     pdf.text("un'esperienza positiva?", centerX, 72, { align: "center" });
 
-    pdf.setFontSize(14);
+    pdf.setFontSize(17);
     pdf.setTextColor(80, 80, 80);
     pdf.text(businessName || "Questa attività", centerX, 86, {
       align: "center",
