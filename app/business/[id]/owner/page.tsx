@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "../../../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import BusinessQrPdfButton from "../../../components/BusinessQrPdfButton";
 
 type Business = {
   id: number;
@@ -574,7 +575,27 @@ export default function OwnerDashboardPage() {
             <p className="text-neutral-600 text-sm">Nessuna foto caricata.</p>
           )}
         </div>
+        <div className="border rounded-3xl p-6 sm:p-8 mt-6 bg-white shadow-sm">
+  <h2 className="text-2xl font-bold text-black mb-2">
+    Materiale per il tuo locale
+  </h2>
 
+  <p className="text-neutral-600 mb-6">
+    Scarica un QR Code stampabile in formato A5 da esporre nel tuo locale.
+    I clienti potranno inquadrarlo con lo smartphone e lasciare un Positive
+    in pochi secondi.
+  </p>
+
+  <BusinessQrPdfButton
+    businessId={business.id}
+    businessName={business.name}
+  />
+
+  <p className="text-xs text-neutral-500 mt-4">
+    Consigliamo di posizionare il QR Code vicino alla cassa, sul bancone
+    oppure sul tavolo.
+  </p>
+</div>
         {message && (
           <p className="text-sm text-neutral-600 mt-5">{message}</p>
         )}
