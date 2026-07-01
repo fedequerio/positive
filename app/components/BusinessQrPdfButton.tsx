@@ -33,7 +33,7 @@ export default function BusinessQrPdfButton({ businessId, businessName }: Props)
     pdf.setFillColor(255, 255, 255);
     pdf.rect(0, 0, 148, 210, "F");
 
-    pdf.addImage("/positive-wordmark.png", "PNG", 29, 14, 90, 32);
+    pdf.addImage("/positive-logo2.png", "PNG", 29, 14, 90, 32);
 
     pdf.setTextColor(17, 17, 17);
     pdf.setFont("helvetica", "bold");
@@ -41,8 +41,8 @@ export default function BusinessQrPdfButton({ businessId, businessName }: Props)
     pdf.text("Hai vissuto", centerX, 62, { align: "center" });
     pdf.text("un'esperienza positiva?", centerX, 72, { align: "center" });
 
-    pdf.setFontSize(37);
-    pdf.setTextColor(80, 80, 80);
+    pdf.setFontSize(27);
+    pdf.setTextColor(0, 0, 0);
     pdf.text(businessName || "Questa attività", centerX, 86, {
       align: "center",
     });

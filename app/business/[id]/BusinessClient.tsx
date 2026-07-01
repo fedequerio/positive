@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -87,7 +87,8 @@ function normalizeText(text?: string | null) {
 export default function BusinessPage() {
   const params = useParams();
   const businessId = Number(params.id);
-
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [business, setBusiness] = useState<Business | null>(null);
   const [photos, setPhotos] = useState<BusinessPhoto[]>([]);
   const [hours, setHours] = useState<BusinessHour[]>([]);
@@ -116,7 +117,7 @@ export default function BusinessPage() {
     const { data: positivesData } = await supabase
       .from("positives")
       .select("id, tag")
-      .eq("business_name", data.name);
+      .eq("business_id", businessId);
 
     setPositives(positivesData ? positivesData.length : 0);
     const cosCounts = new Map<string, number>();
@@ -155,9 +156,22 @@ setTopCos(sortedCos);
   }
 
   async function loadUser() {
-    const { data } = await supabase.auth.getSession();
-    setUser(data.session?.user ?? null);
+  const { data } = await supabase.auth.getSession();
+  const currentUser = data.session?.user ?? null;
+
+  const isFromQr = searchParams.get("source") === "qr";
+
+  if (isFromQr && !currentUser) {
+    router.replace(
+      `/login/qr?next=${encodeURIComponent(
+        `/business/${businessId}?source=qr`
+      )}`
+    );
+    return;
   }
+
+  setUser(currentUser);
+}
 
   async function addPositive() {
   if (!user) {
@@ -177,12 +191,13 @@ setTopCos(sortedCos);
   setPositives((current) => current + 1);
 
   const { error } = await supabase.from("positives").insert([
-    {
-      business_name: business.name,
-      user_id: user.id,
-      tag: cleanCos || null,
-    },
-  ]);
+  {
+    business_id: business.id,
+    business_name: business.name,
+    user_id: user.id,
+    tag: cleanCos || null,
+  },
+]);
 
   if (error) {
     setMessage("Hai già dato Positive a questa attività.");

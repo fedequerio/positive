@@ -174,26 +174,24 @@ export default function Home() {
       );
     }
 
-    const businessNames = Array.from(
-      new Set(businessData.map((business) => business.name).filter(Boolean))
-    );
+    const businessIds = businessData.map((business) => business.id);
 
-    let allPositives: any[] = [];
+let allPositives: any[] = [];
 
-    if (businessNames.length > 0) {
-      const { data } = await supabase
-        .from("positives")
-        .select("id, business_name, tag")
-        .in("business_name", businessNames)
-        .range(0, 4999);
+if (businessIds.length > 0) {
+  const { data } = await supabase
+    .from("positives")
+    .select("id, business_id, tag")
+    .in("business_id", businessIds)
+    .range(0, 4999);
 
-      allPositives = data || [];
-    }
+  allPositives = data || [];
+}
 
-    const businessesWithCounts = businessData.map((business) => {
-      const positivesForBusiness = allPositives.filter(
-        (positive) => positive.business_name === business.name
-      );
+const businessesWithCounts = businessData.map((business) => {
+  const positivesForBusiness = allPositives.filter(
+    (positive) => positive.business_id === business.id
+  );
 
       const tags = Array.from(
         new Set(
@@ -431,15 +429,15 @@ export default function Home() {
     );
   }
 
-  async function addPositive(businessName: string | null) {
-    if (!businessName) return;
+  async function addPositive(business: Business) {
+    if (!business.name) return;
 
     if (!user) {
       setMessage("Devi accedere prima.");
       return;
     }
 
-    const tag = normalizeText(positiveTags[businessName]);
+    const tag = normalizeText(positiveTags[business.name || ""]);
 
     if (tag && tag.includes(" ")) {
       setMessage("Usa una sola parola.");
@@ -447,39 +445,44 @@ export default function Home() {
     }
 
     setBusinesses((current) =>
-      current.map((business) =>
-        business.name === businessName
-          ? {
-              ...business,
-              positives: business.positives + 1,
-              tags: tag
-                ? Array.from(new Set([...business.tags, tag]))
-                : business.tags,
-            }
-          : business
-      )
-    );
+  current.map((item) =>
+    item.id === business.id
+      ? {
+          ...item,
+          positives: item.positives + 1,
+          tags: tag
+            ? Array.from(new Set([...item.tags, tag]))
+            : item.tags,
+        }
+      : item
+  )
+  );
 
-    const { error } = await supabase.from("positives").insert([
-      {
-        business_name: businessName,
-        user_id: user.id,
-        tag,
-      },
-    ]);
+  const { error } = await supabase.from("positives").insert([
+  {
+    business_id: business.id,
+    business_name: business.name,
+    user_id: user.id,
+    tag,
+  },
+  ]);
 
-    if (error) {
-      setMessage(error.message);
-      loadBusinesses(search);
-    } else {
-      setMessage("Positive salvato!");
-      setPositiveTags((current) => ({
-        ...current,
-        [businessName]: "",
-      }));
-    }
+   if (error) {
+  if (error.code === "23505") {
+    setMessage("Hai già dato Positive a questa attività.");
+  } else {
+    setMessage(error.message);
   }
 
+  loadBusinesses(search);
+} else {
+  setMessage("Positive salvato!");
+  setPositiveTags((current) => ({
+    ...current,
+    [business.name || ""]: "",
+  }));
+  }
+}
   useEffect(() => {
     const timer = setTimeout(() => {
       loadBusinesses(search);
@@ -702,7 +705,7 @@ export default function Home() {
                     />
 
                     <button
-                      onClick={() => addPositive(business.name)}
+                      onClick={() => addPositive(business)}
                       className="bg-black w-20 h-20 rounded-3xl flex items-center justify-center hover:scale-105 active:scale-95 transition shadow-[0_8px_20px_rgba(0,0,0,0.25)]"
                     >
                       <img
