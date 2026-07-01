@@ -41,7 +41,7 @@ export default function BusinessQrPdfButton({ businessId, businessName }: Props)
     pdf.text("Hai vissuto", centerX, 62, { align: "center" });
     pdf.text("un'esperienza positiva?", centerX, 72, { align: "center" });
 
-    pdf.setFontSize(17);
+    pdf.setFontSize(37);
     pdf.setTextColor(80, 80, 80);
     pdf.text(businessName || "Questa attività", centerX, 86, {
       align: "center",
@@ -57,7 +57,7 @@ export default function BusinessQrPdfButton({ businessId, businessName }: Props)
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(10);
     pdf.setTextColor(80, 80, 80);
-    pdf.text("Condividi ciò che hai apprezzato", centerX, 196, {
+    pdf.text("Condividi ciò che hai apprezzato, bastano 30 secondi", centerX, 196, {
       align: "center",
     });
     pdf.text("e aiuta altre persone a scoprire questa attività.", centerX, 201, {
