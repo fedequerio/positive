@@ -175,9 +175,11 @@ setTopCos(sortedCos);
 
   async function addPositive() {
   if (!user) {
-    setMessage("Devi accedere dalla homepage prima di dare un Positive.");
-    return;
-  }
+  const next = window.location.pathname + window.location.search;
+
+  router.push(`/login/qr?next=${encodeURIComponent(next)}`);
+  return;
+}
 
   if (!business?.name) return;
 
@@ -200,13 +202,48 @@ setTopCos(sortedCos);
 ]);
 
   if (error) {
-    setMessage("Hai già dato Positive a questa attività.");
+  if (error.code === "23505" && cleanCos) {
+  const { data: existingPositive, error: selectError } = await supabase
+    .from("positives")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("business_id", businessId)
+    .single();
+
+  if (selectError || !existingPositive) {
+    setMessage(selectError?.message || "Positive esistente non trovato.");
     loadBusiness();
+    return;
+  }
+
+  const { error: updateError } = await supabase
+    .from("positives")
+    .update({ tag: cleanCos })
+    .eq("id", existingPositive.id);
+
+  if (updateError) {
+    setMessage(updateError.message);
   } else {
-    setMessage("Positive salvato!");
+    setMessage("Grazie per aver COSato!");
     setCosText("");
     loadBusiness();
   }
+
+  return;
+}
+
+  if (error.code === "23505") {
+    setMessage("Hai già dato Positive a questa attività.");
+  } else {
+    setMessage(error.message);
+  }
+
+  loadBusiness();
+} else {
+  setMessage("Positive salvato!");
+  setCosText("");
+  loadBusiness();
+}
 }
 
   function openPhoto(index: number) {
@@ -392,12 +429,36 @@ async function copyLink() {
     </p>
   )}
 
-  <button
-    onClick={addPositive}
-    className="bg-black text-white w-full px-8 py-4 rounded-2xl text-xl hover:scale-105 active:scale-95 transition whitespace-nowrap"
+ <button
+  onClick={addPositive}
+  className="w-full bg-black text-white rounded-2xl py-4
+             flex items-center justify-center gap-3
+             hover:scale-105 active:scale-95 transition"
+>
+  <img
+    src="/positive-logo.png"
+    alt="Positive"
+    className="w-8 h-8 object-contain shrink-0"
+  />
+
+  <span className="text-2xl font-semibold tracking-tight">
+    Positive
+  </span>
+</button>
+{message && (
+  <p
+    className={`mt-3 text-sm text-center font-medium ${
+      message.includes("già")
+        ? "text-amber-600"
+        : message.includes("salvato")
+        ? "text-green-600"
+        : "text-red-600"
+    }`}
   >
-    + Positive
-  </button>
+    {message}
+  </p>
+)}
+
 </div>
             </div>
             {topCos.length > 0 && (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
@@ -67,7 +68,7 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [message, setMessage] = useState("");
-
+  const router = useRouter();
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newCity, setNewCity] = useState("");
@@ -430,58 +431,94 @@ const businessesWithCounts = businessData.map((business) => {
   }
 
   async function addPositive(business: Business) {
-    if (!business.name) return;
+  if (!business.name) return;
 
-    if (!user) {
-      setMessage("Devi accedere prima.");
-      return;
-    }
+  if (!user) {
+    const next = window.location.pathname + window.location.search;
+    router.push(`/login/qr?next=${encodeURIComponent(next)}`);
+    return;
+  }
 
-    const tag = normalizeText(positiveTags[business.name || ""]);
+  const tag = normalizeText(positiveTags[business.name || ""]);
 
-    if (tag && tag.includes(" ")) {
-      setMessage("Usa una sola parola.");
-      return;
-    }
+  if (tag && tag.includes(" ")) {
+    setMessage("Usa una sola parola.");
+    return;
+  }
 
-    setBusinesses((current) =>
-  current.map((item) =>
-    item.id === business.id
-      ? {
-          ...item,
-          positives: item.positives + 1,
-          tags: tag
-            ? Array.from(new Set([...item.tags, tag]))
-            : item.tags,
-        }
-      : item
-  )
+  setBusinesses((current) =>
+    current.map((item) =>
+      item.id === business.id
+        ? {
+            ...item,
+            positives: item.positives + 1,
+            tags: tag
+              ? Array.from(new Set([...item.tags, tag]))
+              : item.tags,
+          }
+        : item
+    )
   );
 
   const { error } = await supabase.from("positives").insert([
-  {
-    business_id: business.id,
-    business_name: business.name,
-    user_id: user.id,
-    tag,
-  },
+    {
+      business_id: business.id,
+      business_name: business.name,
+      user_id: user.id,
+      tag: tag || null,
+    },
   ]);
 
-   if (error) {
-  if (error.code === "23505") {
-    setMessage("Hai già dato Positive a questa attività.");
-  } else {
-    setMessage(error.message);
+  if (error) {
+    if (error.code === "23505" && tag) {
+      const { data: existingPositive, error: selectError } = await supabase
+        .from("positives")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("business_id", business.id)
+        .single();
+
+      if (selectError || !existingPositive) {
+        setMessage(selectError?.message || "Positive esistente non trovato.");
+        loadBusinesses(search);
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from("positives")
+        .update({ tag })
+        .eq("id", existingPositive.id);
+
+      if (updateError) {
+        setMessage(updateError.message);
+      } else {
+        setMessage("Grazie per aver COSato!");
+        setPositiveTags((current) => ({
+          ...current,
+          [business.name || ""]: "",
+        }));
+        loadBusinesses(search);
+      }
+
+      return;
+    }
+
+    if (error.code === "23505") {
+      setMessage("Hai già dato Positive a questa attività.");
+    } else {
+      setMessage(error.message);
+    }
+
+    loadBusinesses(search);
+    return;
   }
 
-  loadBusinesses(search);
-} else {
-  setMessage("Positive salvato!");
+  setMessage(tag ? "Grazie per aver COSato!" : "Positive salvato!");
   setPositiveTags((current) => ({
     ...current,
     [business.name || ""]: "",
   }));
-  }
+  loadBusinesses(search);
 }
   useEffect(() => {
     const timer = setTimeout(() => {
