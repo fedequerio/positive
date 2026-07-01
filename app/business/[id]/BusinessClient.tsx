@@ -133,7 +133,7 @@ export default function BusinessPage() {
 const sortedCos = Array.from(cosCounts.entries())
   .map(([tag, count]) => ({ tag, count }))
   .sort((a, b) => b.count - a.count)
-  .slice(0, 6);
+  .slice(0, 7);
 
 setTopCos(sortedCos);
 

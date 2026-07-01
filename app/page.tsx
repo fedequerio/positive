@@ -118,110 +118,118 @@ export default function Home() {
   }
 
   async function loadBusinesses(searchTerm = "") {
-    const term = normalizeText(searchTerm);
-    const words = term.split(/\s+/).filter(Boolean);
+  const term = normalizeText(searchTerm);
+  const words = term.split(/\s+/).filter(Boolean);
 
-    let businessData: any[] = [];
+  let businessData: any[] = [];
 
-    if (!term) {
+  if (!term) {
+    const { data } = await supabase
+      .from("businesses")
+      .select("*")
+      .range(0, 999);
+
+    businessData = data || [];
+  } else {
+    const { data: candidateBusinesses } = await supabase
+      .from("businesses")
+      .select("*")
+      .or(
+        words
+          .map(
+            (word) =>
+              `name.ilike.%${word}%,category.ilike.%${word}%,city.ilike.%${word}%,address.ilike.%${word}%`
+          )
+          .join(",")
+      )
+      .range(0, 999);
+
+    const { data: tagData } = await supabase
+      .from("positives")
+      .select("business_id, tag")
+      .or(words.map((word) => `tag.ilike.%${word}%`).join(","))
+      .range(0, 999);
+
+    const tagBusinessIds = Array.from(
+      new Set(
+        (tagData || [])
+          .map((item) => item.business_id)
+          .filter(Boolean)
+      )
+    );
+
+    let tagBusinessData: any[] = [];
+
+    if (tagBusinessIds.length > 0) {
       const { data } = await supabase
         .from("businesses")
         .select("*")
+        .in("id", tagBusinessIds)
         .range(0, 999);
 
-      businessData = data || [];
-    } else {
-      const { data: candidateBusinesses } = await supabase
-        .from("businesses")
-        .select("*")
-        .or(
-          words
-            .map(
-              (word) =>
-                `name.ilike.%${word}%,category.ilike.%${word}%,city.ilike.%${word}%,address.ilike.%${word}%`
-            )
-            .join(",")
-        )
-        .range(0, 999);
-
-      const { data: tagData } = await supabase
-        .from("positives")
-        .select("business_name, tag")
-        .or(words.map((word) => `tag.ilike.%${word}%`).join(","))
-        .range(0, 999);
-
-      const tagNames = Array.from(
-        new Set(
-          (tagData || []).map((item) => item.business_name).filter(Boolean)
-        )
-      );
-
-      let tagBusinessData: any[] = [];
-
-      if (tagNames.length > 0) {
-        const { data } = await supabase
-          .from("businesses")
-          .select("*")
-          .in("name", tagNames)
-          .range(0, 999);
-
-        tagBusinessData = data || [];
-      }
-
-      const merged = [...(candidateBusinesses || []), ...tagBusinessData];
-
-      businessData = Array.from(
-        new Map(merged.map((business) => [business.id, business])).values()
-      );
+      tagBusinessData = data || [];
     }
 
-    const businessIds = businessData.map((business) => business.id);
+    const merged = [...(candidateBusinesses || []), ...tagBusinessData];
 
-let allPositives: any[] = [];
-
-if (businessIds.length > 0) {
-  const { data } = await supabase
-    .from("positives")
-    .select("id, business_id, tag")
-    .in("business_id", businessIds)
-    .range(0, 4999);
-
-  allPositives = data || [];
-}
-
-const businessesWithCounts = businessData.map((business) => {
-  const positivesForBusiness = allPositives.filter(
-    (positive) => positive.business_id === business.id
-  );
-
-      const tags = Array.from(
-        new Set(
-          positivesForBusiness
-            .map((positive) => normalizeText(positive.tag))
-            .filter(Boolean)
-        )
-      );
-
-      return {
-        ...business,
-        positives: positivesForBusiness.length,
-        tags,
-      };
-    });
-
-    const filtered = businessesWithCounts.filter((business) => {
-      if (words.length === 0) return true;
-
-      const text = `${business.name || ""} ${business.category || ""} ${
-        business.city || ""
-      } ${business.address || ""} ${business.tags.join(" ")}`.toLowerCase();
-
-      return words.every((word) => text.includes(word));
-    });
-
-    setBusinesses(filtered);
+    businessData = Array.from(
+      new Map(merged.map((business) => [business.id, business])).values()
+    );
   }
 
+  const businessIds = businessData.map((business) => business.id);
+
+  let allPositives: any[] = [];
+
+  if (businessIds.length > 0) {
+    const { data } = await supabase
+      .from("positives")
+      .select("id, business_id, tag")
+      .in("business_id", businessIds)
+      .range(0, 4999);
+
+    allPositives = data || [];
+  }
+
+  const businessesWithCounts = businessData.map((business) => {
+    const positivesForBusiness = allPositives.filter(
+      (positive) => positive.business_id === business.id
+    );
+
+    const cosCounts = new Map<string, number>();
+
+    positivesForBusiness.forEach((positive) => {
+      const tag = normalizeText(positive.tag);
+
+      if (!tag) return;
+
+      cosCounts.set(tag, (cosCounts.get(tag) || 0) + 1);
+    });
+
+    const tags = Array.from(cosCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([tag]) => tag);
+
+    return {
+      ...business,
+      positives: positivesForBusiness.length,
+      tags,
+    };
+  });
+
+  const filtered = businessesWithCounts.filter((business) => {
+    if (words.length === 0) return true;
+
+    const text = `${business.name || ""} ${business.category || ""} ${
+      business.city || ""
+    } ${business.address || ""} ${business.tags.join(" ")}`.toLowerCase();
+
+    return words.every((word) => text.includes(word));
+  });
+
+  setBusinesses(filtered);
+}
   function useMyLocationForNewBusiness() {
     if (isLocating) return;
 
